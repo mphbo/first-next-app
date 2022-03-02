@@ -1,8 +1,8 @@
 import EventItem from "./EventItem";
 import classes from "./eventList.module.css";
 
-function EventList({ items }) {
-  const events = items.map((event) => (
+function EventList({ events }) {
+  const eventItems = events.map((event) => (
     <EventItem
       key={event.id}
       id={event.id}
@@ -12,7 +12,7 @@ function EventList({ items }) {
       image={event.image}
     />
   ));
-  return <ul className={classes.list}>{events}</ul>;
+  return <ul className={classes.list}>{eventItems}</ul>;
 }
 
 export default EventList;
