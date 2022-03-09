@@ -1,17 +1,38 @@
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import EventList from "../../components/events/EventList";
 import ResultsTitle from "../../components/events/results-title";
-import { getFilteredEvents } from "../../dummy-data";
+import { getFilteredEvents } from "../../helpers";
 import ErrorAlert from "../../components/ui/error-alert";
 import Button from "../../components/ui/Button";
+import useSWR from "swr";
 
 function FilteredEventsPage() {
   const router = useRouter();
+  const [loadedEvents, setLoadedEvents] = useState();
+  const { data, error } = useSWR(
+    "https://nextjs-course-ba476-default-rtdb.firebaseio.com/events.json",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
+  useEffect(() => {
+    if (data) {
+      const events = [];
+      for (const key in data) {
+        events.push({
+          ...data[key],
+        });
+      }
+      setLoadedEvents(events);
+    }
+  }, [data]);
 
   const filterData = router.query.slug;
-
   if (!filterData) {
+    return <p className="center">Loading...</p>;
+  }
+
+  if (!loadedEvents) {
     return <p className="center">Loading...</p>;
   }
 
@@ -32,7 +53,7 @@ function FilteredEventsPage() {
     return (
       <>
         <ErrorAlert>
-          <p>Invalid filter. Please adjust your values.</p>
+          <p>Invalid filter, Please adjust your values!</p>
         </ErrorAlert>
         <div className="center">
           <Button link="/events">Show All Events</Button>
@@ -41,9 +62,12 @@ function FilteredEventsPage() {
     );
   }
 
-  const filteredEvents = getFilteredEvents({
-    year: numYear,
-    month: numMonth,
+  const filteredEvents = loadedEvents.filter((event) => {
+    const eventDate = new Date(event.date);
+    return (
+      eventDate.getFullYear() === numYear &&
+      eventDate.getMonth() === numMonth - 1
+    );
   });
 
   if (!filteredEvents || filteredEvents.length === 0) {
@@ -59,11 +83,11 @@ function FilteredEventsPage() {
     );
   }
 
-  const date = new Date(numYear, numMonth - 1);
+  const newDate = new Date(numYear, numMonth - 1);
 
   return (
     <>
-      <ResultsTitle date={date} />
+      <ResultsTitle date={newDate} />
       <EventList events={filteredEvents} />
     </>
   );
