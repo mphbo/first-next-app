@@ -1,64 +1,37 @@
-import {
-  connectDatabase,
-  insertDocument,
-  getAllDocuments,
-} from '../../../helpers/db-util';
-
-async function handler(req, res) {
+const handler = (req, res) => {
   const eventId = req.query.eventId;
 
-  let client;
-
-  try {
-    client = await connectDatabase();
-  } catch (error) {
-    res.status(500).json({ message: 'Connecting to the database failed!' });
-    return;
-  }
-
-  if (req.method === 'POST') {
+  if (req.body === "POST") {
     const { email, name, text } = req.body;
-
     if (
-      !email.includes('@') ||
+      !email.includes("@") ||
       !name ||
-      name.trim() === '' ||
+      name.trim() === "" ||
       !text ||
-      text.trim() === ''
+      text.trim() === ""
     ) {
-      res.status(422).json({ message: 'Invalid input.' });
-      client.close();
+      res.status(422).json({ message: "Invalid input." });
       return;
     }
-
     const newComment = {
+      id: new Date().toISOString(),
       email,
       name,
       text,
-      eventId,
     };
-
-    let result;
-
-    try {
-      result = await insertDocument(client, 'comments', newComment);
-      newComment._id = result.insertedId;
-      res.status(201).json({ message: 'Added comment.', comment: newComment });
-    } catch (error) {
-      res.status(500).json({ message: 'Inserting comment failed!' });
-    }
+    console.log(newComment);
+    res.status(201).json({ message: "Added comment." });
   }
 
-  if (req.method === 'GET') {
-    try {
-      const documents = await getAllDocuments(client, 'comments', { _id: -1 });
-      res.status(200).json({ comments: documents });
-    } catch (error) {
-      res.status(500).json({ message: 'Getting comments failed.' });
-    }
-  }
+  if (req.method === "GET") {
+    const dummyList = [
+      { id: "c1", name: "Max", text: "this is a comment" },
+      { id: "c2", name: "Sam", text: "this is a second comment" },
+      { id: "c3", name: "Frodo", text: "this is a third comment" },
+    ];
 
-  client.close();
-}
+    res.status(200).json({ comments: dummyList });
+  }
+};
 
 export default handler;
