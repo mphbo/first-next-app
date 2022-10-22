@@ -24,23 +24,23 @@ const handler = async (req, res) => {
       text,
       eventId,
     };
-    console.log(newComment);
 
     const db = client.db();
     const result = await db.collection("comments").insertOne(newComment);
-    console.log("result:", result);
 
     res.status(201).json({ message: "Added comment." });
   }
 
   if (req.method === "GET") {
-    const dummyList = [
-      { id: "c1", name: "Max", text: "this is a comment" },
-      { id: "c2", name: "Sam", text: "this is a second comment" },
-      { id: "c3", name: "Frodo", text: "this is a third comment" },
-    ];
+    const db = client.db();
 
-    res.status(200).json({ comments: dummyList });
+    const comments = db
+      .collection("comments")
+      .find()
+      .sort({ _id: -1 })
+      .toArray();
+
+    res.status(200).json({ comments });
   }
   client.close();
 };
