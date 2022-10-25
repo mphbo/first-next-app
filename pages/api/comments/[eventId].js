@@ -34,7 +34,7 @@ const handler = async (req, res) => {
   if (req.method === "GET") {
     const db = client.db();
 
-    const comments = db
+    const comments = await db
       .collection("comments")
       .find()
       .sort({ _id: -1 })
